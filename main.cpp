@@ -1,202 +1,290 @@
 ﻿#include <iostream>
+
 using namespace std;
 
-class MyVectorBool {
+class MyVectorBool
+{
 private:
-	bool* m_value;
-	int m_length;
-
+	bool* VectorBool;
+	int NumLen;
 public:
 	MyVectorBool(int N)
 	{
-		m_length = length(N);
-		m_value = new bool[m_length];
-
-		for (int i = m_length - 1; i >= 0; i--)
+		int NumCpy = N;
+		while (NumCpy != 0)
 		{
-			m_value[i] = N % 2;
-			N = N / 2;
+			NumCpy /= 2;
+			NumLen++;
+		}
+		VectorBool = new bool[NumLen];
+		NumCpy = N;
+		int Rem;
+		int l = 0;
+		while (NumCpy != 0)
+		{
+			Rem = NumCpy % 2;
+			NumCpy /= 2;
+			VectorBool[NumLen - l - 1] = Rem;
+			l++;
 		}
 	}
 
 	MyVectorBool()
 	{
-		m_length = 0;
-		m_value = new bool[m_length];
-		for (int i = 0; i < m_length; i++)
-		{
-			m_value[i] = 0;
-		}
+		NumLen = 0;
+		VectorBool = nullptr;
 	}
 
-	MyVectorBool(const MyVectorBool& other)
+	MyVectorBool(MyVectorBool& other)
 	{
-		m_length = other.m_length;
-		m_value = new bool[m_length];
-		for (int i = 0; i < m_length; i++)
+		NumLen = other.NumLen;
+		VectorBool = new bool[NumLen];
+		for (int i = 0; i < NumLen; i++)
 		{
-			m_value[i] = other.m_value[i];
+			VectorBool[i] = other.VectorBool[i];
 		}
+
+	}
+
+	MyVectorBool& operator = (const MyVectorBool& other)
+	{
+		delete[] VectorBool;
+		NumLen = other.NumLen;
+		VectorBool = new bool[NumLen];
+		for (int i = 0; i < NumLen; i++)
+		{
+			VectorBool[i] = other.VectorBool[i];
+		}
+		return *this;
+	}
+
+	void add_start(bool k)
+	{
+		bool* NewVectorBool = new bool[NumLen];
+		for (int i = 0; i < NumLen; i++)
+		{
+			NewVectorBool[i] = VectorBool[i];
+		}
+		delete[] VectorBool;
+		NumLen++;
+		VectorBool = new bool[NumLen];
+		VectorBool[0] = k;
+		for (int i = 1; i < (NumLen); i++)
+		{
+			VectorBool[i] = NewVectorBool[i - 1];
+		}
+		delete[] NewVectorBool;
+	}
+
+	void add_end(bool k)
+	{
+		bool* NewVectorBool = new bool[NumLen];
+		for (int i = 0; i < NumLen; i++)
+		{
+			NewVectorBool[i] = VectorBool[i];
+		}
+		delete[] VectorBool;
+		NumLen++;
+		VectorBool = new bool[NumLen];
+		for (int i = 0; i < (NumLen - 1); i++)
+		{
+			VectorBool[i] = NewVectorBool[i];
+		}
+		VectorBool[NumLen - 1] = k;
+		delete[] NewVectorBool;
+	}
+
+	int size()
+	{
+		return NumLen;
+	}
+
+	void erase(int k)
+	{
+		for (int i = k; i < NumLen; i++)
+		{
+			VectorBool[i] = VectorBool[i + 1];
+		}
+		NumLen--;
+	}
+
+	bool& operator [] (int i)
+	{
+		return VectorBool[i];
+	}
+
+	friend ostream& operator << (ostream& out, const MyVectorBool& a)
+	{
+		for (int i = 0; i < a.NumLen; i++)
+		{
+			out << a.VectorBool[i];
+		}
+		return out;
+	}
+
+	friend MyVectorBool operator + (MyVectorBool& A, MyVectorBool& B)
+	{
+		int t1 = 0;
+		int t2 = 0;
+		if (A.NumLen < B.NumLen)
+		{
+			for (int i = A.NumLen; i < B.NumLen; i++)
+			{
+				A.add_start(0);
+				t1++;
+			}
+		}
+		else if (A.NumLen > B.NumLen)
+		{
+			for (int i = B.NumLen; i < A.NumLen; i++)
+			{
+				B.add_start(0);
+				t2++;
+			}
+		}
+		MyVectorBool temp;
+		if (A.NumLen == B.NumLen)
+		{
+			bool Rem = 0;
+			temp.NumLen = A.NumLen;
+			temp.VectorBool = new bool[temp.NumLen];
+			for (int i = (temp.NumLen - 1); i >= 0; i--)
+			{
+				if ((A.VectorBool[i] == 0) && (B.VectorBool[i] == 0) && (Rem == 0))
+				{
+					temp.VectorBool[i] = false;
+					Rem = false;
+				}
+				else if (((A.VectorBool[i] == 1) && (B.VectorBool[i] == 0) && (Rem == 0)) || ((A.VectorBool[i] == 0) && (B.VectorBool[i] == 1) && (Rem == 0)) || ((A.VectorBool[i] == 0) && (B.VectorBool[i] == 0) && (Rem == 1)))
+				{
+					temp.VectorBool[i] = true;
+					Rem = false;
+				}
+				else if (((A.VectorBool[i] == 1) && (B.VectorBool[i] == 1) && (Rem == 0)) || ((A.VectorBool[i] == 1) && (B.VectorBool[i] == 0) && (Rem == 1)) || ((A.VectorBool[i] == 0) && (B.VectorBool[i] == 1) && (Rem == 1)))
+				{
+					temp.VectorBool[i] = false;
+					Rem = true;
+				}
+				else if ((A.VectorBool[i] == 1) && (B.VectorBool[i] == 1) && (Rem == 1))
+				{
+					temp.VectorBool[i] = true;
+					Rem = true;
+				}
+				else
+				{
+					cout << endl << "Не вышло!" << endl;
+					cout << "A: " << A.VectorBool[i] << endl << "B: " << B.VectorBool[i] << endl << "Rem: " << Rem << endl << "Summa: " << temp.VectorBool[i] << endl << endl;
+				}
+			}
+			if (Rem == 1)
+			{
+				temp.add_start(1);
+			}
+		}
+		if (t1 != 0)
+		{
+			for (int i = 0; i < t1; i++)
+			{
+				A.erase(0);
+			}
+		}
+		else if (t2 != 0)
+		{
+			for (int i = 0; i < t2; i++)
+			{
+				B.erase(0);
+			}
+		}
+
+		for (int i = 0; i < temp.NumLen; i += 0)
+		{
+			if (temp.VectorBool[i] == 0)
+			{
+				temp.erase(i);
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		return temp;
+	}
+
+	void removeZeros() {
+		int numNonZeros = 0;
+
+		for (int i = 0; i < NumLen; i++) {
+			if (VectorBool[i] != 0) {
+				numNonZeros++;
+			}
+		}
+
+		bool* newVectorBool = new bool[numNonZeros];
+		int index = 0;
+
+		for (int i = 0; i < NumLen; i++) {
+			if (VectorBool[i] != 0) {
+				newVectorBool[index] = VectorBool[i];
+				index++;
+			}
+		}
+
+		delete[] VectorBool;
+		VectorBool = newVectorBool;
+		NumLen = numNonZeros;
 	}
 
 
 	~MyVectorBool()
 	{
-		for (int i = 0; i < m_length; i++)
-		{
-			delete[m_length] m_value;
-			m_value = nullptr;
-		}
-	}
-
-	int length(int N)
-	{
-		int temp{ 0 };
-		int count{ 0 };
-		while (N > 0)
-		{
-			N = N / 2;
-			count += 1;
-		}
-		return count;
-	}
-
-	int size()
-	{
-		return m_length;
-	}
-
-	void add_start(bool k)
-	{
-		bool* new_value = new bool[m_length + 1];
-		new_value[0] = k;
-		for (int i = 0; i < m_length; i++)
-		{
-			new_value[i + 1] = m_value[i];
-		}
-		delete[m_length] m_value;
-		m_value = nullptr;
-		m_value = new_value;
-		m_length++;
-	}
-
-	void add_end(bool k)
-	{
-		bool* new_values = new bool[m_length + 1];
-
-		for (int i = 0; i < m_length; i++)
-		{
-			new_values[i] = m_value[i];
-		}
-
-		new_values[m_length] = k;
-
-		delete[] m_value;
-
-		m_value = new_values;
-		m_length += 1;
-	}
-
-	void erase(int i)
-	{
-		if (i < 0 || i >= m_length)
-		{
-			return;
-		}
-
-		bool* new_values = new bool[m_length - 1];
-
-		for (int j = 0; j < i; j++) {
-			new_values[j] = m_value[j];
-		}
-
-		for (int j = i + 1; j < m_length; j++) {
-			new_values[j - 1] = m_value[j];
-		}
-
-		delete[] m_value;
-
-		m_value = new_values;
-		m_length -= 1;
-	}
-
-	MyVectorBool operator+(const MyVectorBool& other) const
-	{
-		int maxLength = std::max(m_length, other.m_length);
-		MyVectorBool result(maxLength);
-
-		MyVectorBool tempThis = *this;
-		MyVectorBool tempOther = other;
-
-		// Дополняем векторы нулями до одинаковой длины
-		if (tempThis.m_length < maxLength)
-		{
-			tempThis.add_start(0);
-		}
-		if (tempOther.m_length < maxLength)
-		{
-			tempOther.add_start(0);
-		}
-
-		bool carry = 0;
-
-		for (int i = maxLength - 1; i >= 0; i--)
-		{
-			bool sum = (tempThis.m_value[i] + tempOther.m_value[i] + carry) % 2;
-			carry = (tempThis.m_value[i] + tempOther.m_value[i] + carry) / 2;
-
-			result.m_value[i] = sum;
-		}
-
-		if (carry)
-		{
-			cout << result;
-			cout << result.size();
-			result.add_start(1);
-		}
-
-		return result;
-	}
-
-	MyVectorBool& operator=(const MyVectorBool& other)
-	{
-		if (this == &other) {
-			return *this;
-		}
-
-		delete[] m_value;
-
-		m_length = other.m_length;
-		m_value = new bool[m_length];
-
-		for (int i = 0; i < m_length; i++) {
-			m_value[i] = other.m_value[i];
-		}
-
-		return *this;
-	}
-
-	friend::ostream& operator<<(ostream &os,const MyVectorBool &temp)
-	{
-		for (int i = 0; i < temp.m_length; i++)
-		{
-			os << temp.m_value[i];	
-		}
-		os << endl;
-		return os;
+		delete[] VectorBool;
 	}
 };
 
 int main()
 {
-	MyVectorBool el1(100);
-	MyVectorBool el2(5);
+	setlocale(LC_ALL, "Ru");
+	int N = 8;
+	int M = 3;
+	MyVectorBool A(N);
+	MyVectorBool B(M);
 
-	MyVectorBool vector(0);
-	cout << vector;
-	vector = el1 + el2;
-	cout << vector;
+	bool k = 0;
+	bool m = 1;
+	A.add_start(k);
+	B.add_end(m);
+	cout << "Добавить k в начало A: " << A << endl;
+	cout << "Добавить m в начало B: " << B << endl;
 
-	//MyVectorBool vector = element1 + element2;
-	
+	MyVectorBool C;
+	MyVectorBool D;
+	C = A + B;
+	cout << "C = A + B: " << C << endl;
+	D = B + B;
+	cout << "D = B + B: " << D << endl;
+
+	int index = 1;
+	if (C[index] == 1)
+	{
+		C[index] = 0;
+	}
+	else
+	{
+		C[index] = 1;
+	}
+	cout << "Замена значения на проивоположное: " << C << endl;
+
+	C.erase(index);
+	cout << "Удален элемент: " << C << endl << endl;
+
+	cout << B.size() << " " << B << endl;
+
+	for (int i = 0; i < B.size(); i++)
+	{
+		cout << "Hello world" << endl;
+	}
+
+	cout << endl;
+
 }
